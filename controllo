@@ -1,0 +1,157 @@
+#!/usr/bin/python
+# slider.py
+
+import wx
+import serial
+
+maxx = 255
+minn = 0
+
+
+
+def serial_work(motore,slider):
+
+    print type(slider)
+    print motore,slider
+    #ser.write(slider)      # write a string
+             
+
+    
+class MyFrame(wx.Frame):
+    
+    def __init__(self, parent, id, title):
+        global maxx, minn
+        wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition, (400, 400))
+
+        panel = wx.Panel(self, -1)
+        
+        wx.EVT_KEY_DOWN(self, self.OnKeyDown)
+        panel.SetFocus()
+        
+        SLIDERbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        
+        self.sld = wx.Slider(panel, -1, 0, minn, maxx, wx.DefaultPosition, (100,255),
+                              wx.SL_AUTOTICKS | wx.SL_VERTICAL | wx.SL_LABELS | wx.SL_INVERSE)
+
+        self.sld1 = wx.Slider(panel, -1, 0, minn, maxx, wx.DefaultPosition, (100,255),
+                              wx.SL_AUTOTICKS | wx.SL_VERTICAL | wx.SL_LABELS | wx.SL_INVERSE)
+
+        self.sld2 = wx.Slider(panel, -1, 0, minn, maxx, wx.DefaultPosition, (100,255),
+                              wx.SL_AUTOTICKS | wx.SL_VERTICAL | wx.SL_LABELS | wx.SL_INVERSE)
+
+
+        
+        btn1 = wx.Button(panel, 8, 'Valore Motori')
+        btn2 = wx.Button(panel, 9, 'Close')
+        
+        wx.EVT_BUTTON(self, 8, self.Getpos)
+        wx.EVT_BUTTON(self, 9, self.OnClose)
+        
+        
+        
+        wx.EVT_COMMAND_SCROLL(self.sld, -1 , self.Getpos1)
+        wx.EVT_COMMAND_SCROLL(self.sld1, -1 , self.Getpos2)
+        wx.EVT_COMMAND_SCROLL(self.sld2, -1 , self.Getpos3)
+        #wx.MOUSE_BTN_LEFT(self.mouse)
+        wx.EVT_CLOSE(self, self.OnClose)
+        
+        SLIDERbox.Add(self.sld, 1, wx.ALIGN_CENTRE)
+        SLIDERbox.Add(self.sld1, 1, wx.ALIGN_CENTRE)
+        SLIDERbox.Add(self.sld2, 1, wx.ALIGN_CENTRE)
+        hbox.Add(btn1, 1, wx.RIGHT, 10)
+        hbox.Add(btn2, 1)
+        vbox.Add(SLIDERbox, 0, wx.ALIGN_CENTRE | wx.ALL, 20)
+        vbox.Add(hbox, 0, wx.ALIGN_CENTRE | wx.ALL, 20)
+        panel.SetSizer(vbox)
+        
+        '''PERDE IL FOCUS ( CREDO ) SUL CLIK DEL MOUSE IMPOSTA EVENTO CHE RISETTA FOCUS ON MOUSE CLICK'''
+        
+
+    '''def OnAdjust(self, event):
+        val = self.sld.GetValue()
+
+        self.SetSize((val*2, val))
+    def mouse(self,event):
+        print click'''
+        
+    def OnClose(self, event):
+        
+     #   ser.close() # close serial port
+        self.Destroy()
+    def Getpos(self, event):
+        print self.sld.GetValue (), self.sld1.GetValue () , self.sld2.GetValue ()
+                         
+
+    def Getpos1(self, event):
+        #print self.sld.GetValue ()
+        serial_work("mot1", self.sld.GetValue ())
+        
+    def Getpos2(self, event):
+        #print self.sld1.GetValue ()
+        serial_work("mot2", self.sld1.GetValue ())
+    def Getpos3(self, event):
+        #print self.sld2.GetValue ()
+        serial_work("mot3", self.sld2.GetValue ())
+
+    def OnKeyDown(self, event):
+        
+        tick=10
+        keycode = event.GetKeyCode()
+        
+        print 'keycode '+ str(keycode)
+        if keycode == 81:
+            newpos=self.sld.GetValue ()+tick
+            if newpos<=maxx and newpos>=minn:
+                self.sld.SetValue(newpos)
+                serial_work("mot1", newpos)
+                print "q",newpos
+        if keycode == 65:
+            newpos=self.sld.GetValue ()-tick
+            if newpos<=maxx and newpos>=minn:
+                self.sld.SetValue(newpos)
+                serial_work("mot1", newpos)
+                print "q",newpos
+        if keycode == 87:
+            newpos=self.sld1.GetValue ()+tick
+            if newpos<=maxx and newpos>=minn:
+                self.sld1.SetValue(newpos)
+                serial_work("mot2", newpos)
+                print "w",newpos
+        if keycode == 83:
+             newpos=self.sld1.GetValue ()-tick
+             if newpos<=maxx and newpos>=minn:
+                self.sld1.SetValue(newpos)
+                serial_work("mot2", newpos)
+                print "s",newpos 
+        if keycode == 75:
+            newpos=self.sld2.GetValue ()+tick
+            if newpos<=maxx and newpos>=minn:
+                self.sld2.SetValue(newpos)
+                serial_work("mot3", newpos)
+                print "k",newpos  
+        if keycode == 76:
+            newpos=self.sld2.GetValue ()-tick
+            if newpos<=maxx and newpos>=minn:
+                self.sld2.SetValue(newpos)
+                serial_work("mot3", newpos)
+                print "l",newpos  
+        event.Skip()
+        
+class MyApp(wx.App):
+    def OnInit(self):
+        global ser
+        frame = MyFrame(None, -1, 'Controllo elicottero')
+        frame.Show(True)
+       # ser = serial.Serial('COM4', 9600, timeout=1) # open first serial port
+       # print ser.portstr
+        frame.Centre()
+        return True
+
+
+
+app = MyApp(0)
+
+app.MainLoop()
